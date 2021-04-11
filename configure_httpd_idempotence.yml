@@ -1,0 +1,39 @@
+- hosts: all
+  tasks:
+         
+         - package:
+                 name: "httpd"
+                 state: present
+
+         - package:
+                 name: "php"
+                 state: present
+
+         - file:
+                 state: directory
+                 path: /var/www/webApp
+
+         - template:
+                 src: "webApp.conf"
+                 dest: "/etc/httpd/conf.d/"
+           notify: Restart-With-Idempotence
+
+         - copy:
+                 src: "index.php"
+                 dest: "/var/www/webApp/"
+           notify: Restart-With-Idempotence
+
+
+         - firewalld:
+                 port: "8080/tcp"
+                 state: enabled
+                 permanent: yes
+                 immediate: yes
+
+  handlers:
+         - name: Restart-With-Idempotence
+           service:
+                 name: "httpd"
+                 state: restarted
+           
+
